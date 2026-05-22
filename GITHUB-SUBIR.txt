@@ -1,0 +1,34 @@
+QUÉ SUBIR A GITHUB (repo Proyecto)
+==================================
+
+SÍ SUBIR:
+- src/                    (todo el frontend)
+- api/                    (código Python, Dockerfile, labels.json, README.md)
+  EXCEPTO el archivo .keras pesado (ver abajo)
+- supabase/schema.sql
+- supabase/SETUP-SUPABASE.txt
+- package.json, package-lock.json o pnpm-lock.yaml (si existe)
+- index.html, vite.config.ts, vercel.json, tsconfig.json
+- .env.example            (sin claves reales, solo plantilla)
+- .gitignore
+- GITHUB-SUBIR.txt
+
+NO SUBIR (ya están en .gitignore o no deben ir):
+- .env                    ← TIENE TUS CLAVES SECRETAS
+- .env.local
+- node_modules/
+- dist/
+- api/model/*.keras       ← modelo de IA (muy pesado, va en Hugging Face)
+- api/model/*.h5
+- api/.venv/
+- __pycache__/
+
+NUNCA SUBIR:
+- VITE_SUPABASE_ANON_KEY con valor real en ningún archivo del repo
+- service_role de Supabase (solo en servidor, nunca en el front)
+- Contraseñas de usuarios
+
+DESPUÉS DE SUBIR:
+1. Vercel redeploy automático
+2. Variables en Vercel (no en GitHub):
+   VITE_API_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY

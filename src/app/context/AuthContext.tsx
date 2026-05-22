@@ -84,29 +84,12 @@ function toLocalUser(stored: StoredUser): User {
   };
 }
 
-async function resolveSupabaseUser(authUser: SupabaseAuthUser): Promise<User> {
-  const fallbackName =
+function userFromAuth(authUser: SupabaseAuthUser): User {
+  const name =
     (authUser.user_metadata?.name as string | undefined) ||
     authUser.email?.split('@')[0] ||
     'Usuario';
-
-  if (!supabase) {
-    return {
-      id: authUser.id,
-      name: fallbackName,
-      email: authUser.email ?? '',
-      avatarInitials: makeInitials(fallbackName),
-    };
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('name, email')
-    .eq('id', authUser.id)
-    .maybeSingle();
-
-  const name = profile?.name || fallbackName;
-  const email = profile?.email || authUser.email || '';
+  const email = authUser.email ?? '';
 
   return {
     id: authUser.id,
@@ -114,6 +97,30 @@ async function resolveSupabaseUser(authUser: SupabaseAuthUser): Promise<User> {
     email,
     avatarInitials: makeInitials(name),
   };
+}
+
+async function enrichFromProfile(base: User): Promise<User> {
+  if (!supabase) return base;
+
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('name, email')
+      .eq('id', base.id)
+      .maybeSingle();
+
+    if (error || !profile) return base;
+
+    const name = profile.name || base.name;
+    return {
+      id: base.id,
+      name,
+      email: profile.email || base.email,
+      avatarInitials: makeInitials(name),
+    };
+  } catch {
+    return base;
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -140,26 +147,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       return;
     }
-    // DESPUÉS
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        setUser(await resolveSupabaseUser(session.user));
+
+    let active = true;
+
+    const finishLoading = () => {
+      if (active) setIsLoading(false);
+    };
+
+    const applySession = (authUser: SupabaseAuthUser | undefined) => {
+      if (!active) return;
+      if (!authUser) {
+        setUser(null);
+        return;
       }
-      setIsLoading(false);
-    }).catch(() => {
-      setIsLoading(false);
-    });
+      const base = userFromAuth(authUser);
+      setUser(base);
+      void enrichFromProfile(base).then((enriched) => {
+        if (active) setUser(enriched);
+      });
+    };
+
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        setUser(await resolveSupabaseUser(session.user));
-      } else {
-        setUser(null);
-      }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      applySession(session?.user);
+      finishLoading();
     });
 
-    return () => subscription.unsubscribe();
+    const safetyTimer = window.setTimeout(finishLoading, 8000);
+
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        applySession(session?.user);
+      })
+      .catch(() => {
+        if (active) setUser(null);
+      })
+      .finally(() => {
+        window.clearTimeout(safetyTimer);
+        finishLoading();
+      });
+
+    return () => {
+      active = false;
+      window.clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
   }, [usesSupabase]);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
@@ -176,7 +210,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password: trimmedPassword,
       });
       if (error) return { success: false, error: mapAuthError(error.message) };
-      if (data.user) setUser(await resolveSupabaseUser(data.user));
+      if (data.user) {
+        const base = userFromAuth(data.user);
+        setUser(base);
+        void enrichFromProfile(base).then(setUser);
+      }
       return { success: true };
     }
 
@@ -215,7 +253,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         options: { data: { name: trimmedName } },
       });
       if (error) return { success: false, error: mapAuthError(error.message) };
-      if (data.user) setUser(await resolveSupabaseUser(data.user));
+      if (data.user) {
+        const base = userFromAuth(data.user);
+        setUser(base);
+        void enrichFromProfile(base).then(setUser);
+      }
       return { success: true };
     }
 
