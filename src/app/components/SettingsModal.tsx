@@ -1,6 +1,7 @@
 import { X, Settings, Sliders, Bell, Shield, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 
 interface ToggleProps {
@@ -33,6 +34,7 @@ function Toggle({ checked, onChange }: ToggleProps) {
 
 export function SettingsModal() {
   const { isSettingsOpen, setIsSettingsOpen, clearHistory } = useApp();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState(true);
   const [autoAnalyze, setAutoAnalyze] = useState(false);
   const [highResMode, setHighResMode] = useState(false);
@@ -149,11 +151,11 @@ export function SettingsModal() {
                 >
                   <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#1a7a4a' }} />
                   <p style={{ color: '#555', fontSize: '0.8rem', lineHeight: 1.5 }}>
-                    Las imágenes se envían a la API para inferencia. El historial solo se guarda en este navegador.
+                    Las imágenes se envían a la API para inferencia. Métricas e historial se guardan en Supabase (sin almacenar fotos).
                   </p>
                 </div>
                 <button
-                  onClick={() => { clearHistory(); }}
+                  onClick={() => { void clearHistory(user?.id); }}
                   className="w-full py-2.5 rounded-xl border transition-colors"
                   style={{
                     border: '1.5px solid #fee2e2',

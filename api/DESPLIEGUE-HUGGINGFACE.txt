@@ -1,0 +1,72 @@
+API EN HUGGING FACE SPACES (1 DÍA / DEMO)
+=========================================
+
+1. Crea cuenta en https://huggingface.co (gratis).
+
+2. Crea un Space nuevo:
+   https://huggingface.co/new-space
+   - Nombre: freshcheck-api (o el que quieras)
+   - SDK: Docker
+   - Visibilidad: Public
+
+3. Sube ARCHIVOS SUELTOS a la RAÍZ del Space (Files → Upload files).
+   Hugging Face NO permite subir carpetas; sube uno por uno:
+
+   OBLIGATORIOS:
+   - Dockerfile
+   - README.md
+   - requirements.txt
+   - config.py
+   - predictor.py
+   - main.py
+   - labels.json
+   - fruit_multioutput_model.keras    ← en la RAÍZ, no dentro de model/
+
+   OPCIONAL (no hace falta para que funcione):
+   - class_config.json
+
+   En tu PC el modelo puede estar en api/model/, pero en HF súbelo
+   suelto a la raíz con el nombre exacto: fruit_multioutput_model.keras
+
+4. Si el archivo es muy grande y la web falla:
+   - Space → Settings → activar "Large files" / Git LFS si aparece
+   - O clona el repo del Space en tu PC, copia el .keras a la raíz, git push
+
+5. TRUCO si quieres usar carpeta model/ en HF (opcional):
+   - Files → "Add file" → "Create a new file"
+   - En el nombre escribe: model/fruit_multioutput_model.keras
+   - Eso crea la carpeta model/ automáticamente
+   - (Con el Dockerfile actual NO hace falta; basta subir el .keras a la raíz)
+
+6. Espera el build (5–15 min la primera vez). Estado "Running" = listo.
+
+7. Prueba:
+   https://TU-USUARIO-freshcheck-api.hf.space/health
+
+8. URL para el frontend:
+   https://TU-USUARIO-freshcheck-api.hf.space
+
+
+FRONTEND (VERCEL)
+=================
+
+1. Proyecto en GitHub (raíz con package.json).
+
+2. https://vercel.com → Import repo.
+
+3. Build: npm run build  |  Output: dist
+
+4. Variable de entorno:
+   VITE_API_URL = https://TU-USUARIO-freshcheck-api.hf.space
+
+5. Deploy → usa la URL de Vercel en la presentación.
+
+6. CORS (si falla la petición desde Vercel):
+   Space → Settings → Repository secrets / Variables:
+   ALLOWED_ORIGINS = *
+
+
+EL DÍA DE LA DEMO
+=================
+1. Abre el Space 2–3 min antes.
+2. Primera imagen puede tardar ~30–60 s si estaba dormido.

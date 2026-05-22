@@ -2,6 +2,7 @@ import { X, Clock, Trash2, CheckCircle2, AlertTriangle, Leaf } from 'lucide-reac
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp, AnalysisResult } from '../context/AppContext';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../context/AuthContext';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { conditionLabel, produceDisplayName } from '../utils/es';
 
@@ -23,12 +24,14 @@ function ConditionBadge({ condition }: { condition: AnalysisResult['condition'] 
 }
 
 export function HistoryPanel() {
-  const { isHistoryOpen, setIsHistoryOpen, history, clearHistory, setCurrentImage, setAnalysisResult } = useApp();
+  const { isHistoryOpen, setIsHistoryOpen, history, historyImageCache, clearHistory, setCurrentImage, setAnalysisResult } = useApp();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleView = (item: AnalysisResult) => {
-    setCurrentImage(item.imageUrl);
-    setAnalysisResult(item);
+    const image = historyImageCache[item.id] || item.imageUrl || null;
+    setCurrentImage(image);
+    setAnalysisResult({ ...item, imageUrl: image ?? '' });
     setIsHistoryOpen(false);
     navigate('/results');
   };
@@ -112,12 +115,21 @@ export function HistoryPanel() {
                         onMouseEnter={e => (e.currentTarget.style.background = '#f0f7f3')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'white')}
                       >
-                        <ImageWithFallback
-                          src={item.imageUrl}
-                          alt={item.produceName}
-                          className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                          style={{ border: '1px solid #e5e7eb' }}
-                        />
+                        {historyImageCache[item.id] || item.imageUrl ? (
+                          <ImageWithFallback
+                            src={historyImageCache[item.id] || item.imageUrl}
+                            alt={item.produceName}
+                            className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                            style={{ border: '1px solid #e5e7eb' }}
+                          />
+                        ) : (
+                          <div
+                            className="w-12 h-12 rounded-lg flex-shrink-0 flex items-center justify-center"
+                            style={{ background: '#f0f7f3', border: '1px solid #e5e7eb' }}
+                          >
+                            <Leaf className="w-5 h-5" style={{ color: '#1a7a4a', opacity: 0.5 }} />
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <span style={{ fontWeight: 600, color: '#111', fontSize: '0.9rem' }}>
@@ -127,7 +139,7 @@ export function HistoryPanel() {
                           </div>
                           <div className="flex items-center gap-3 mt-0.5">
                             <span style={{ color: '#888', fontSize: '0.75rem' }}>
-                              {item.fruitTypeConfidence}% confianza
+                              {item.fruitTypeConfidence}% · {item.latency} ms
                             </span>
                             <span style={{ color: '#bbb', fontSize: '0.7rem' }}>
                               {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -145,7 +157,7 @@ export function HistoryPanel() {
             {history.length > 0 && (
               <div className="px-4 py-4 border-t border-gray-100">
                 <button
-                  onClick={clearHistory}
+                  onClick={() => clearHistory(user?.id)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-colors"
                   style={{
                     border: '1.5px solid #fee2e2',

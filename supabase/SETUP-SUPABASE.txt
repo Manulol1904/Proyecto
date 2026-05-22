@@ -1,0 +1,37 @@
+CONFIGURAR SUPABASE PARA FRESHCHECK
+===================================
+
+1. Crea proyecto gratis en https://supabase.com
+
+2. En el proyecto → SQL Editor → pega y ejecuta todo el archivo:
+   supabase/schema.sql
+
+3. Obtén las claves (Settings → API):
+   - Project URL          → VITE_SUPABASE_URL
+   - anon public key      → VITE_SUPABASE_ANON_KEY
+
+4. En tu PC, archivo .env en la raíz del frontend:
+
+   VITE_SUPABASE_URL=https://xxxxx.supabase.co
+   VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+   VITE_API_URL=https://manulh1904-freshcheck-api.hf.space
+
+5. En Vercel → Settings → Environment Variables:
+   Añade las mismas tres variables → Redeploy
+
+6. Auth en Supabase (Authentication → Providers):
+   - Email activado
+   - Para demo rápida: desactiva "Confirm email" en
+     Authentication → Sign In / Providers → Email
+     (así el registro entra al instante sin confirmar correo)
+
+7. Crea usuario demo (opcional):
+   - Authentication → Users → Add user
+   - Email: demo@freshcheck.app  Password: demo1234
+   - User Metadata: {"name": "Usuario demo"}
+
+8. Prueba: regístrate en la app, analiza una imagen, abre Historial.
+   En Supabase → Table Editor → analyses verás latencia y confianzas.
+
+NOTA: Las imágenes NO se guardan en la BD (solo métricas).
+      El historial muestra miniatura solo en la sesión actual.

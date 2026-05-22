@@ -10,7 +10,7 @@ const BG_IMAGE =
 type Tab = 'login' | 'register';
 
 export function LoginPage() {
-  const { login, register } = useAuth();
+  const { login, register, usesSupabase } = useAuth();
   const navigate = useNavigate();
 
   const [tab, setTab] = useState<Tab>('login');
@@ -256,27 +256,33 @@ export function LoginPage() {
                   }
                 />
 
-                {/* Demo hint */}
-                <div
-                  className="flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer"
-                  style={{ backgroundColor: '#f0fdf4', border: '1px dashed #86efac' }}
-                  onClick={fillDemo}
-                >
-                  <div>
-                    <p style={{ fontSize: '0.78rem', fontWeight: 600, color: '#166534' }}>
-                      Cuenta de demostración
-                    </p>
-                    <p style={{ fontSize: '0.75rem', color: '#4ade80' }}>
-                      demo@freshcheck.app / demo1234
-                    </p>
-                  </div>
-                  <span
-                    className="px-2 py-1 rounded-lg text-xs"
-                    style={{ backgroundColor: '#dcfce7', color: '#16a34a', fontWeight: 600 }}
+                {!usesSupabase && (
+                  <div
+                    className="flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer"
+                    style={{ backgroundColor: '#f0fdf4', border: '1px dashed #86efac' }}
+                    onClick={fillDemo}
                   >
-                    Usar
-                  </span>
-                </div>
+                    <div>
+                      <p style={{ fontSize: '0.78rem', fontWeight: 600, color: '#166534' }}>
+                        Cuenta de demostración (local)
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: '#4ade80' }}>
+                        demo@freshcheck.app / demo1234
+                      </p>
+                    </div>
+                    <span
+                      className="px-2 py-1 rounded-lg text-xs"
+                      style={{ backgroundColor: '#dcfce7', color: '#16a34a', fontWeight: 600 }}
+                    >
+                      Usar
+                    </span>
+                  </div>
+                )}
+                {usesSupabase && (
+                  <p style={{ fontSize: '0.78rem', color: '#64748b', lineHeight: 1.5 }}>
+                    Crea una cuenta con tu correo o usa el usuario demo configurado en Supabase.
+                  </p>
+                )}
 
                 <SubmitButton loading={isSubmitting} label="Iniciar sesión" />
               </motion.form>

@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import type { User as SupabaseAuthUser } from '@supabase/supabase-js';
+import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 
 export interface User {
   id: string;
@@ -7,20 +9,14 @@ export interface User {
   avatarInitials: string;
 }
 
-interface StoredUser {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-}
-
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  usesSupabase: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -28,27 +24,16 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const USERS_KEY = 'freshcheck_users';
 const SESSION_KEY = 'freshcheck_user';
 
+interface StoredUser {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+}
+
 const DEFAULT_USERS: StoredUser[] = [
   { id: '1', name: 'Usuario demo', email: 'demo@freshcheck.app', password: 'demo1234' },
 ];
-
-function loadUsers(): StoredUser[] {
-  try {
-    const raw = localStorage.getItem(USERS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as StoredUser[];
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch {
-    localStorage.removeItem(USERS_KEY);
-  }
-  saveUsers(DEFAULT_USERS);
-  return [...DEFAULT_USERS];
-}
-
-function saveUsers(users: StoredUser[]) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
 
 function makeInitials(name: string) {
   return name
@@ -59,7 +44,38 @@ function makeInitials(name: string) {
     .slice(0, 2);
 }
 
-function toPublicUser(stored: StoredUser): User {
+function mapAuthError(message: string): string {
+  const lower = message.toLowerCase();
+  if (lower.includes('invalid login') || lower.includes('invalid credentials')) {
+    return 'Correo o contraseña incorrectos.';
+  }
+  if (lower.includes('already registered') || lower.includes('already exists')) {
+    return 'Este correo ya está registrado.';
+  }
+  if (lower.includes('password') && lower.includes('6')) {
+    return 'La contraseña debe tener al menos 6 caracteres.';
+  }
+  if (lower.includes('email not confirmed')) {
+    return 'Confirma tu correo antes de iniciar sesión (revisa tu bandeja).';
+  }
+  return message;
+}
+
+function loadLocalUsers(): StoredUser[] {
+  try {
+    const raw = localStorage.getItem(USERS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as StoredUser[];
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {
+    localStorage.removeItem(USERS_KEY);
+  }
+  localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
+  return [...DEFAULT_USERS];
+}
+
+function toLocalUser(stored: StoredUser): User {
   return {
     id: stored.id,
     name: stored.name,
@@ -68,30 +84,82 @@ function toPublicUser(stored: StoredUser): User {
   };
 }
 
+async function resolveSupabaseUser(authUser: SupabaseAuthUser): Promise<User> {
+  const fallbackName =
+    (authUser.user_metadata?.name as string | undefined) ||
+    authUser.email?.split('@')[0] ||
+    'Usuario';
+
+  if (!supabase) {
+    return {
+      id: authUser.id,
+      name: fallbackName,
+      email: authUser.email ?? '',
+      avatarInitials: makeInitials(fallbackName),
+    };
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, email')
+    .eq('id', authUser.id)
+    .maybeSingle();
+
+  const name = profile?.name || fallbackName;
+  const email = profile?.email || authUser.email || '';
+
+  return {
+    id: authUser.id,
+    name,
+    email,
+    avatarInitials: makeInitials(name),
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const usesSupabase = isSupabaseConfigured;
 
   useEffect(() => {
-    const stored = localStorage.getItem(SESSION_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as User;
-        const users = loadUsers();
-        const stillValid = users.some(
-          (u) => u.id === parsed.id && u.email.toLowerCase() === parsed.email.toLowerCase()
-        );
-        if (stillValid) {
-          setUser(parsed);
-        } else {
+    if (!usesSupabase || !supabase) {
+      const stored = localStorage.getItem(SESSION_KEY);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as User;
+          const users = loadLocalUsers();
+          const stillValid = users.some(
+            (u) => u.id === parsed.id && u.email.toLowerCase() === parsed.email.toLowerCase()
+          );
+          if (stillValid) setUser(parsed);
+          else localStorage.removeItem(SESSION_KEY);
+        } catch {
           localStorage.removeItem(SESSION_KEY);
         }
-      } catch {
-        localStorage.removeItem(SESSION_KEY);
       }
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
-  }, []);
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        setUser(await resolveSupabaseUser(session.user));
+      }
+      setIsLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        setUser(await resolveSupabaseUser(session.user));
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [usesSupabase]);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     const trimmedEmail = email.trim();
@@ -101,15 +169,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: 'Ingresa correo y contraseña.' };
     }
 
-    await new Promise((r) => setTimeout(r, 600));
+    if (usesSupabase && supabase) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password: trimmedPassword,
+      });
+      if (error) return { success: false, error: mapAuthError(error.message) };
+      if (data.user) setUser(await resolveSupabaseUser(data.user));
+      return { success: true };
+    }
 
-    const users = loadUsers();
+    await new Promise((r) => setTimeout(r, 500));
+    const users = loadLocalUsers();
     const found = users.find(
       (u) => u.email.toLowerCase() === trimmedEmail.toLowerCase() && u.password === trimmedPassword
     );
     if (!found) return { success: false, error: 'Correo o contraseña incorrectos.' };
 
-    const loggedUser = toPublicUser(found);
+    const loggedUser = toLocalUser(found);
     setUser(loggedUser);
     localStorage.setItem(SESSION_KEY, JSON.stringify(loggedUser));
     return { success: true };
@@ -130,9 +207,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: 'La contraseña debe tener al menos 6 caracteres.' };
     }
 
-    await new Promise((r) => setTimeout(r, 700));
+    if (usesSupabase && supabase) {
+      const { data, error } = await supabase.auth.signUp({
+        email: trimmedEmail,
+        password: trimmedPassword,
+        options: { data: { name: trimmedName } },
+      });
+      if (error) return { success: false, error: mapAuthError(error.message) };
+      if (data.user) setUser(await resolveSupabaseUser(data.user));
+      return { success: true };
+    }
 
-    const users = loadUsers();
+    await new Promise((r) => setTimeout(r, 600));
+    const users = loadLocalUsers();
     const exists = users.find((u) => u.email.toLowerCase() === trimmedEmail.toLowerCase());
     if (exists) return { success: false, error: 'Este correo ya está registrado.' };
 
@@ -143,21 +230,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password: trimmedPassword,
     };
     users.push(newUser);
-    saveUsers(users);
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
 
-    const loggedUser = toPublicUser(newUser);
+    const loggedUser = toLocalUser(newUser);
     setUser(loggedUser);
     localStorage.setItem(SESSION_KEY, JSON.stringify(loggedUser));
     return { success: true };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (usesSupabase && supabase) {
+      await supabase.auth.signOut();
+    }
     setUser(null);
     localStorage.removeItem(SESSION_KEY);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated: !!user, isLoading, usesSupabase, login, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

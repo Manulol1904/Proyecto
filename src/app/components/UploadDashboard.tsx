@@ -3,6 +3,7 @@ import { Upload, Camera, FolderOpen, Scan, CheckCircle2, Sparkles } from 'lucide
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { analyzeImage } from '../utils/analyzeImage';
 import { analyzeStages } from '../utils/es';
 import { WebcamModal } from './WebcamModal';
@@ -41,6 +42,7 @@ const PRODUCE_DOTS = ['#ef4444', '#eab308', '#22c55e', '#8b5cf6', '#f97316'];
 export function UploadDashboard() {
   const navigate = useNavigate();
   const { setCurrentImage, setCurrentSampleHint, setAnalysisResult, addToHistory } = useApp();
+  const { user } = useAuth();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -104,7 +106,7 @@ export function UploadDashboard() {
       setCurrentImage(selectedImage);
       setCurrentSampleHint(selectedHint);
       setAnalysisResult(result);
-      addToHistory(result);
+      await addToHistory(result, user?.id);
       navigate('/results');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo analizar la imagen';

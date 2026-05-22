@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { deleteUserAnalyses, saveAnalysis } from '../services/analyses';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 export interface AnalysisResult {
   id: string;
@@ -22,8 +24,11 @@ interface AppContextType {
   analysisResult: AnalysisResult | null;
   setAnalysisResult: (result: AnalysisResult | null) => void;
   history: AnalysisResult[];
-  addToHistory: (result: AnalysisResult) => void;
-  clearHistory: () => void;
+  setHistory: (items: AnalysisResult[]) => void;
+  historyImageCache: Record<string, string>;
+  setHistoryImageCache: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  addToHistory: (result: AnalysisResult, userId?: string) => Promise<void>;
+  clearHistory: (userId?: string) => Promise<void>;
   isHistoryOpen: boolean;
   setIsHistoryOpen: (v: boolean) => void;
   isSettingsOpen: boolean;
@@ -37,24 +42,56 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentSampleHint, setCurrentSampleHint] = useState('');
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [history, setHistory] = useState<AnalysisResult[]>([]);
+  const [historyImageCache, setHistoryImageCache] = useState<Record<string, string>>({});
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const addToHistory = (result: AnalysisResult) => {
-    setHistory(prev => [result, ...prev].slice(0, 20));
-  };
+  const addToHistory = useCallback(async (result: AnalysisResult, userId?: string) => {
+    let savedId = result.id;
 
-  const clearHistory = () => setHistory([]);
+    if (isSupabaseConfigured && userId) {
+      const dbId = await saveAnalysis(userId, result);
+      if (dbId) savedId = dbId;
+    }
+
+    const stored: AnalysisResult = { ...result, id: savedId };
+
+    if (result.imageUrl) {
+      setHistoryImageCache((prev) => ({ ...prev, [savedId]: result.imageUrl }));
+    }
+
+    setHistory((prev) => [stored, ...prev.filter((h) => h.id !== savedId)].slice(0, 20));
+  }, []);
+
+  const clearHistory = useCallback(async (userId?: string) => {
+    if (isSupabaseConfigured && userId) {
+      await deleteUserAnalyses(userId);
+    }
+    setHistory([]);
+    setHistoryImageCache({});
+  }, []);
 
   return (
-    <AppContext.Provider value={{
-      currentImage, setCurrentImage,
-      currentSampleHint, setCurrentSampleHint,
-      analysisResult, setAnalysisResult,
-      history, addToHistory, clearHistory,
-      isHistoryOpen, setIsHistoryOpen,
-      isSettingsOpen, setIsSettingsOpen,
-    }}>
+    <AppContext.Provider
+      value={{
+        currentImage,
+        setCurrentImage,
+        currentSampleHint,
+        setCurrentSampleHint,
+        analysisResult,
+        setAnalysisResult,
+        history,
+        setHistory,
+        historyImageCache,
+        setHistoryImageCache,
+        addToHistory,
+        clearHistory,
+        isHistoryOpen,
+        setIsHistoryOpen,
+        isSettingsOpen,
+        setIsSettingsOpen,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

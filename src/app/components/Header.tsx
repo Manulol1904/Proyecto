@@ -22,9 +22,9 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setAvatarMenuOpen(false);
-    logout();
+    await logout();
     navigate('/login');
   };
 
