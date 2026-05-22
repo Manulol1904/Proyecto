@@ -140,14 +140,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       return;
     }
-
+    // DESPUÉS
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         setUser(await resolveSupabaseUser(session.user));
       }
       setIsLoading(false);
+    }).catch(() => {
+      setIsLoading(false);
     });
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
