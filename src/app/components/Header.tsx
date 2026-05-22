@@ -57,7 +57,7 @@ export function Header() {
             className="hidden sm:block"
             style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.72rem', lineHeight: 1 }}
           >
-            Fruit &amp; Vegetable Classifier
+            Clasificador de frutas y verduras
           </div>
         </div>
       </button>
@@ -72,7 +72,7 @@ export function Header() {
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
           <History className="w-[18px] h-[18px]" />
-          <span className="hidden sm:inline" style={{ fontSize: '0.875rem' }}>History</span>
+          <span className="hidden sm:inline" style={{ fontSize: '0.875rem' }}>Historial</span>
         </button>
 
         <button
@@ -83,7 +83,7 @@ export function Header() {
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
           <Settings className="w-[18px] h-[18px]" />
-          <span className="hidden sm:inline" style={{ fontSize: '0.875rem' }}>Settings</span>
+          <span className="hidden sm:inline" style={{ fontSize: '0.875rem' }}>Ajustes</span>
         </button>
 
         {/* User avatar + dropdown */}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useApp, AnalysisResult } from '../context/AppContext';
 import { useNavigate } from 'react-router';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { conditionLabel, produceDisplayName } from '../utils/es';
 
 function ConditionBadge({ condition }: { condition: AnalysisResult['condition'] }) {
   const map = {
@@ -16,7 +17,7 @@ function ConditionBadge({ condition }: { condition: AnalysisResult['condition'] 
       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
       style={{ background: bg, color, fontSize: '0.7rem', fontWeight: 600 }}
     >
-      {icon} {condition}
+      {icon} {conditionLabel[condition]}
     </span>
   );
 }
@@ -62,7 +63,7 @@ export function HistoryPanel() {
             >
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5" style={{ color: '#1a7a4a' }} />
-                <span style={{ fontWeight: 600, color: '#111', fontSize: '1rem' }}>Analysis History</span>
+                <span style={{ fontWeight: 600, color: '#111', fontSize: '1rem' }}>Historial de análisis</span>
                 {history.length > 0 && (
                   <span
                     className="px-2 py-0.5 rounded-full"
@@ -94,9 +95,9 @@ export function HistoryPanel() {
                     <Leaf className="w-8 h-8" style={{ color: '#1a7a4a', opacity: 0.4 }} />
                   </div>
                   <div>
-                    <p style={{ color: '#333', fontWeight: 500, marginBottom: '4px' }}>No analyses yet</p>
+                    <p style={{ color: '#333', fontWeight: 500, marginBottom: '4px' }}>Aún no hay análisis</p>
                     <p style={{ color: '#888', fontSize: '0.85rem' }}>
-                      Upload a fruit or vegetable image to get started.
+                      Sube una imagen de fruta o verdura para comenzar.
                     </p>
                   </div>
                 </div>
@@ -120,13 +121,13 @@ export function HistoryPanel() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <span style={{ fontWeight: 600, color: '#111', fontSize: '0.9rem' }}>
-                              {item.produceName}
+                              {produceDisplayName(item.produceName)}
                             </span>
                             <ConditionBadge condition={item.condition} />
                           </div>
                           <div className="flex items-center gap-3 mt-0.5">
                             <span style={{ color: '#888', fontSize: '0.75rem' }}>
-                              {item.fruitTypeConfidence}% confidence
+                              {item.fruitTypeConfidence}% confianza
                             </span>
                             <span style={{ color: '#bbb', fontSize: '0.7rem' }}>
                               {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -157,7 +158,7 @@ export function HistoryPanel() {
                   onMouseLeave={e => (e.currentTarget.style.background = 'white')}
                 >
                   <Trash2 className="w-4 h-4" />
-                  Clear History
+                  Borrar historial
                 </button>
               </div>
             )}

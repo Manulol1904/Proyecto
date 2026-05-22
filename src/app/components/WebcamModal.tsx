@@ -35,7 +35,7 @@ export function WebcamModal({ isOpen, onClose, onCapture }: WebcamModalProps) {
           videoRef.current.onloadedmetadata = () => setReady(true);
         }
       } catch {
-        setError('Camera access was denied or is not available on this device.');
+        setError('No se pudo acceder a la cámara o fue denegado el permiso.');
       }
     }
 
@@ -95,7 +95,7 @@ export function WebcamModal({ isOpen, onClose, onCapture }: WebcamModalProps) {
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <Camera className="w-5 h-5" style={{ color: '#1a7a4a' }} />
-                <span style={{ fontWeight: 600, color: '#111', fontSize: '1rem' }}>Capture from Webcam</span>
+                <span style={{ fontWeight: 600, color: '#111', fontSize: '1rem' }}>Capturar con cámara</span>
               </div>
               <button
                 onClick={onClose}
@@ -139,7 +139,7 @@ export function WebcamModal({ isOpen, onClose, onCapture }: WebcamModalProps) {
                               style={{ borderColor: '#1a7a4a', borderTopColor: 'transparent' }}
                             />
                             <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>
-                              Initializing camera...
+                              Iniciando cámara…
                             </span>
                           </div>
                         </div>
@@ -180,7 +180,7 @@ export function WebcamModal({ isOpen, onClose, onCapture }: WebcamModalProps) {
                         onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'white')}
                       >
-                        Cancel
+                        Cancelar
                       </button>
                       <button
                         onClick={handleCapture}
@@ -195,7 +195,7 @@ export function WebcamModal({ isOpen, onClose, onCapture }: WebcamModalProps) {
                         }}
                       >
                         <Camera className="w-4 h-4" />
-                        Capture
+                        Capturar
                       </button>
                     </>
                   ) : (
@@ -213,7 +213,7 @@ export function WebcamModal({ isOpen, onClose, onCapture }: WebcamModalProps) {
                         onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'white')}
                       >
-                        Retake
+                        Repetir
                       </button>
                       <button
                         onClick={handleUse}
@@ -225,7 +225,7 @@ export function WebcamModal({ isOpen, onClose, onCapture }: WebcamModalProps) {
                           fontWeight: 500,
                         }}
                       >
-                        Use This Photo
+                        Usar esta foto
                       </button>
                     </>
                   )}

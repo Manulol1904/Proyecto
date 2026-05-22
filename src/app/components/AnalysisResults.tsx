@@ -7,6 +7,7 @@ import {
 import { motion } from 'motion/react';
 import { useApp, AnalysisResult } from '../context/AppContext';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { conditionLabel, produceDisplayName, produceTypeLabel } from '../utils/es';
 
 /* ── Condition badge ───────────────────────────────────────────────────── */
 function ConditionBadge({ condition }: { condition: AnalysisResult['condition'] }) {
@@ -21,7 +22,7 @@ function ConditionBadge({ condition }: { condition: AnalysisResult['condition'] 
       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full"
       style={{ background: bg, color, fontWeight: 700, fontSize: '0.9rem' }}
     >
-      {icon} {condition}
+      {icon} {conditionLabel[condition]}
     </span>
   );
 }
@@ -151,7 +152,7 @@ export function AnalysisResults() {
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
           <ArrowLeft className="w-4 h-4" />
-          <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Back to Upload</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Volver a subir</span>
         </motion.button>
 
         {/* Main grid: 2-col desktop / 1-col mobile */}
@@ -196,9 +197,9 @@ export function AnalysisResults() {
               >
                 <div className="flex items-end justify-between">
                   <div>
-                    <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.75rem', fontWeight: 500 }}>Detected</p>
+                    <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.75rem', fontWeight: 500 }}>Detectado</p>
                     <h2 style={{ color: 'white', fontWeight: 700, fontSize: '1.5rem', lineHeight: 1.1 }}>
-                      {r.produceName}
+                      {produceDisplayName(r.produceName)}
                     </h2>
                   </div>
                   <div
@@ -213,7 +214,7 @@ export function AnalysisResults() {
                     }}
                   >
                     <span style={{ color: 'white' }}>{conditionIcon}</span>
-                    <span style={{ color: 'white', fontSize: '0.82rem', fontWeight: 700 }}>{r.condition}</span>
+                    <span style={{ color: 'white', fontSize: '0.82rem', fontWeight: 700 }}>{conditionLabel[r.condition]}</span>
                   </div>
                 </div>
               </div>
@@ -221,9 +222,9 @@ export function AnalysisResults() {
 
             {/* Timestamp */}
             <p className="mt-2 text-center" style={{ color: '#aaa', fontSize: '0.75rem' }}>
-              Analysed at {r.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              {' · '}
-              {r.timestamp.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+              Analizado el {r.timestamp.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {' a las '}
+              {r.timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </p>
           </motion.div>
 
@@ -242,10 +243,10 @@ export function AnalysisResults() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p style={{ color: '#888', fontSize: '0.78rem', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                      Classification Result
+                      Resultado de clasificación
                     </p>
                     <h2 style={{ color: '#0f1a13', fontWeight: 700, fontSize: '1.6rem', lineHeight: 1.15, marginTop: '4px' }}>
-                      {r.produceName}
+                      {produceDisplayName(r.produceName)}
                     </h2>
                   </div>
                   <ConditionBadge condition={r.condition} />
@@ -259,8 +260,8 @@ export function AnalysisResults() {
                     <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#c2410c' }} />
                     <p style={{ color: '#9a3412', fontSize: '0.82rem', lineHeight: 1.5 }}>
                       {r.condition === 'Damaged'
-                        ? 'This produce shows signs of spoilage or rot (model: Rotten). Recommend immediate inspection.'
-                        : 'This produce appears overripe. Best consumed soon or used in cooking/processing.'}
+                        ? 'El producto muestra signos de deterioro o podredumbre. Se recomienda inspección inmediata.'
+                        : 'El producto parece sobremaduro. Conviene consumirlo pronto o procesarlo.'}
                     </p>
                   </div>
                 )}
@@ -270,39 +271,39 @@ export function AnalysisResults() {
               <div className="px-6 py-5 space-y-4 border-b border-gray-50">
                 <div className="flex items-center gap-2 mb-1">
                   <BarChart2 className="w-4 h-4" style={{ color: '#1a7a4a' }} />
-                  <span style={{ color: '#333', fontSize: '0.875rem', fontWeight: 600 }}>Confidence Scores</span>
+                  <span style={{ color: '#333', fontSize: '0.875rem', fontWeight: 600 }}>Nivel de confianza</span>
                 </div>
-                <ConfidenceBar label="Fruit / Vegetable Type" value={r.fruitTypeConfidence} delay={0} />
-                <ConfidenceBar label="Quality Condition" value={r.conditionConfidence} delay={150} />
+                <ConfidenceBar label="Tipo de fruta / verdura" value={r.fruitTypeConfidence} delay={0} />
+                <ConfidenceBar label="Estado de calidad" value={r.conditionConfidence} delay={150} />
               </div>
 
               {/* 2×2 Metrics grid */}
               <div className="px-6 py-5 border-b border-gray-50">
                 <div className="flex items-center gap-2 mb-4">
                   <Tag className="w-4 h-4" style={{ color: '#1a7a4a' }} />
-                  <span style={{ color: '#333', fontSize: '0.875rem', fontWeight: 600 }}>Details</span>
+                  <span style={{ color: '#333', fontSize: '0.875rem', fontWeight: 600 }}>Detalles</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <InfoTile
                     icon={<Leaf className="w-4 h-4" />}
-                    label="Produce Type"
-                    value={r.produceType}
+                    label="Categoría"
+                    value={produceTypeLabel[r.produceType]}
                     accent
                   />
                   <InfoTile
                     icon={<CheckCircle2 className="w-4 h-4" />}
-                    label="Condition"
-                    value={r.condition}
+                    label="Estado"
+                    value={conditionLabel[r.condition]}
                     accent={r.condition === 'Healthy'}
                   />
                   <InfoTile
                     icon={<BarChart2 className="w-4 h-4" />}
-                    label="Confidence"
+                    label="Confianza"
                     value={`${r.fruitTypeConfidence}%`}
                   />
                   <InfoTile
                     icon={<Zap className="w-4 h-4" />}
-                    label="Latency"
+                    label="Tiempo"
                     value={`${r.latency} ms`}
                   />
                 </div>
@@ -313,7 +314,7 @@ export function AnalysisResults() {
                 <div className="flex items-center gap-1.5">
                   <Clock3 className="w-3.5 h-3.5" style={{ color: '#aaa' }} />
                   <span style={{ color: '#aaa', fontSize: '0.75rem' }}>
-                    Processed by EfficientNet multi-output · {r.timestamp.toLocaleString()}
+                    Procesado con EfficientNet · {r.timestamp.toLocaleString('es-ES')}
                   </span>
                 </div>
               </div>
@@ -333,7 +334,7 @@ export function AnalysisResults() {
                   onMouseLeave={e => (e.currentTarget.style.background = '#1a7a4a')}
                 >
                   <RefreshCcw className="w-4 h-4" />
-                  Analyze New Image
+                  Analizar otra imagen
                 </button>
 
                 <button
@@ -350,7 +351,7 @@ export function AnalysisResults() {
                   onMouseLeave={e => (e.currentTarget.style.background = 'white')}
                 >
                   <FileDown className="w-4 h-4" />
-                  Export Report
+                  Exportar informe
                 </button>
               </div>
             </div>
@@ -366,7 +367,7 @@ export function AnalysisResults() {
         >
           <Info className="w-3.5 h-3.5" style={{ color: '#1a7a4a', opacity: 0.6 }} />
           <p style={{ color: '#7a9a86', fontSize: '0.78rem' }}>
-            Results are AI-generated estimates. Always verify produce quality visually before consumption.
+            Resultados estimados por IA. Verifica siempre la calidad del producto antes de consumirlo.
           </p>
         </motion.div>
       </div>

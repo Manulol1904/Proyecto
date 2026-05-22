@@ -4,31 +4,32 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { useApp } from '../context/AppContext';
 import { analyzeImage } from '../utils/analyzeImage';
+import { analyzeStages } from '../utils/es';
 import { WebcamModal } from './WebcamModal';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 const SAMPLES = [
   {
     key: 'apple',
-    label: 'Apple',
+    label: 'Manzana',
     dotColor: '#ef4444',
     imageUrl: 'https://images.unsplash.com/photo-1640496190768-61e38be6951d?w=400&q=80',
   },
   {
     key: 'banana',
-    label: 'Banana',
+    label: 'Plátano',
     dotColor: '#eab308',
     imageUrl: 'https://images.unsplash.com/photo-1757332050958-b797a022c910?w=400&q=80',
   },
   {
     key: 'grape',
-    label: 'Grape',
+    label: 'Uva',
     dotColor: '#8b5cf6',
     imageUrl: 'https://images.unsplash.com/photo-1776371271965-965369a83f00?w=400&q=80',
   },
   {
     key: 'tomato',
-    label: 'Tomato',
+    label: 'Tomate',
     dotColor: '#f97316',
     imageUrl: 'https://images.unsplash.com/photo-1700064165267-8fa68ef07167?w=400&q=80',
   },
@@ -36,8 +37,6 @@ const SAMPLES = [
 
 const PRODUCE_DOTS = ['#ef4444', '#eab308', '#22c55e', '#8b5cf6', '#f97316'];
 
-type Stage = 'Uploading' | 'Processing' | 'Classifying' | 'Done';
-const STAGES: Stage[] = ['Uploading', 'Processing', 'Classifying', 'Done'];
 
 export function UploadDashboard() {
   const navigate = useNavigate();
@@ -137,13 +136,13 @@ export function UploadDashboard() {
               style={{ background: '#dcfce7', color: '#16a34a' }}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>AI-Powered Classification</span>
+              <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>Clasificación con IA</span>
             </div>
             <h1 className="mb-2" style={{ color: '#0f3d22', lineHeight: 1.25, fontSize: '1.875rem', fontWeight: 700 }}>
-              Check Freshness Instantly
+              Revisa la frescura al instante
             </h1>
             <p style={{ color: '#4b6b59', fontSize: '1rem', maxWidth: '420px', margin: '0 auto' }}>
-              Upload a photo of any fruit or vegetable and our AI will classify its type and quality in seconds.
+              Sube una foto de fruta o verdura y la IA clasificará el tipo y el estado en segundos.
             </p>
           </motion.div>
 
@@ -171,7 +170,7 @@ export function UploadDashboard() {
                 <div className="relative">
                   <ImageWithFallback
                     src={selectedImage}
-                    alt="Selected produce"
+                    alt="Producto seleccionado"
                     className="w-full object-cover rounded-2xl"
                     style={{ maxHeight: '340px', objectFit: 'cover' }}
                   />
@@ -187,7 +186,7 @@ export function UploadDashboard() {
                         style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)' }}
                       >
                         <span style={{ color: '#1a7a4a', fontSize: '0.78rem', fontWeight: 600 }}>
-                          ✓ Image ready for analysis
+                          ✓ Lista para analizar
                         </span>
                       </div>
                     </div>
@@ -202,7 +201,7 @@ export function UploadDashboard() {
                         backdropFilter: 'blur(8px)',
                       }}
                     >
-                      Change
+                      Cambiar
                     </button>
                   </div>
                 </div>
@@ -220,10 +219,10 @@ export function UploadDashboard() {
 
                   <div>
                     <p style={{ color: '#1a1a1a', fontWeight: 600, fontSize: '1.05rem', marginBottom: '4px' }}>
-                      Drag &amp; drop or click to upload
+                      Arrastra o haz clic para subir
                     </p>
                     <p style={{ color: '#888', fontSize: '0.85rem' }}>
-                      Supports JPG, PNG, WEBP up to 20 MB
+                      JPG, PNG o WEBP hasta 20 MB
                     </p>
                   </div>
 
@@ -265,7 +264,7 @@ export function UploadDashboard() {
               onMouseLeave={e => (e.currentTarget.style.background = '#1a7a4a')}
             >
               <Camera className="w-4 h-4" />
-              Capture from Webcam
+              Capturar con cámara
             </button>
 
             <button
@@ -282,7 +281,7 @@ export function UploadDashboard() {
               onMouseLeave={e => (e.currentTarget.style.background = 'white')}
             >
               <FolderOpen className="w-4 h-4" />
-              Browse Local Files
+              Elegir archivo
             </button>
           </motion.div>
 
@@ -318,7 +317,7 @@ export function UploadDashboard() {
                   onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                 >
                   <Scan className="w-5 h-5" />
-                  Analyze Image
+                  Analizar imagen
                 </button>
                 {analyzeError && (
                   <p className="mt-3 text-sm text-center" style={{ color: '#dc2626' }}>
@@ -340,7 +339,7 @@ export function UploadDashboard() {
               className="text-center mb-4"
               style={{ color: '#7a9a86', fontSize: '0.8rem', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' }}
             >
-              Quick Samples — Try instantly
+              Ejemplos rápidos
             </p>
             <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
               {SAMPLES.map((sample) => (
@@ -410,7 +409,7 @@ export function UploadDashboard() {
               <div className="relative">
                 <ImageWithFallback
                   src={selectedImage!}
-                  alt="Analyzing"
+                  alt="Analizando"
                   className="rounded-2xl object-cover"
                   style={{ width: '100px', height: '100px' }}
                 />
@@ -429,16 +428,16 @@ export function UploadDashboard() {
 
               <div className="text-center">
                 <p style={{ color: 'white', fontWeight: 600, fontSize: '1.05rem', marginBottom: '4px' }}>
-                  Analyzing your produce…
+                  Analizando tu producto…
                 </p>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem' }}>
-                  EfficientNet · 14 produce types · Healthy / Rotten
+                  EfficientNet · 14 tipos · Saludable / Podrido
                 </p>
               </div>
 
               {/* Stage indicators */}
               <div className="flex flex-col gap-2 w-full">
-                {STAGES.slice(0, 3).map((stage, i) => {
+                {analyzeStages.slice(0, 3).map((stage, i) => {
                   const isActive = analyzeStage === i;
                   const isDone = analyzeStage > i;
                   return (

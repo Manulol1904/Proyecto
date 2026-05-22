@@ -57,11 +57,10 @@ export function SettingsModal() {
             exit={{ scale: 0.95, opacity: 0, y: 12 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <Settings className="w-5 h-5" style={{ color: '#1a7a4a' }} />
-                <span style={{ fontWeight: 600, color: '#111', fontSize: '1rem' }}>Settings</span>
+                <span style={{ fontWeight: 600, color: '#111', fontSize: '1rem' }}>Ajustes</span>
               </div>
               <button
                 onClick={() => setIsSettingsOpen(false)}
@@ -74,19 +73,17 @@ export function SettingsModal() {
               </button>
             </div>
 
-            {/* Scrollable content */}
             <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 130px)' }}>
-              {/* Model Settings */}
               <section className="px-6 py-5 border-b border-gray-50">
                 <div className="flex items-center gap-2 mb-4">
                   <Sliders className="w-4 h-4" style={{ color: '#1a7a4a' }} />
-                  <span style={{ fontWeight: 600, color: '#333', fontSize: '0.875rem' }}>Model Settings</span>
+                  <span style={{ fontWeight: 600, color: '#333', fontSize: '0.875rem' }}>Modelo</span>
                 </div>
 
                 <div className="space-y-4">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label style={{ color: '#555', fontSize: '0.875rem' }}>Confidence Threshold</label>
+                      <label style={{ color: '#555', fontSize: '0.875rem' }}>Umbral de confianza</label>
                       <span
                         className="px-2 py-0.5 rounded-full"
                         style={{ background: '#dcfce7', color: '#16a34a', fontSize: '0.8rem', fontWeight: 600 }}
@@ -111,42 +108,40 @@ export function SettingsModal() {
 
                   <div className="flex items-center justify-between py-1">
                     <div>
-                      <p style={{ color: '#333', fontSize: '0.875rem', fontWeight: 500 }}>Auto-Analyze on Upload</p>
-                      <p style={{ color: '#888', fontSize: '0.78rem' }}>Start analysis immediately after file selection</p>
+                      <p style={{ color: '#333', fontSize: '0.875rem', fontWeight: 500 }}>Analizar al subir</p>
+                      <p style={{ color: '#888', fontSize: '0.78rem' }}>Inicia el análisis al elegir la imagen</p>
                     </div>
                     <Toggle checked={autoAnalyze} onChange={setAutoAnalyze} />
                   </div>
 
                   <div className="flex items-center justify-between py-1">
                     <div>
-                      <p style={{ color: '#333', fontSize: '0.875rem', fontWeight: 500 }}>High-Res Processing</p>
-                      <p style={{ color: '#888', fontSize: '0.78rem' }}>Slower but more accurate results</p>
+                      <p style={{ color: '#333', fontSize: '0.875rem', fontWeight: 500 }}>Alta resolución</p>
+                      <p style={{ color: '#888', fontSize: '0.78rem' }}>Más lento, puede ser más preciso</p>
                     </div>
                     <Toggle checked={highResMode} onChange={setHighResMode} />
                   </div>
                 </div>
               </section>
 
-              {/* Notifications */}
               <section className="px-6 py-5 border-b border-gray-50">
                 <div className="flex items-center gap-2 mb-4">
                   <Bell className="w-4 h-4" style={{ color: '#1a7a4a' }} />
-                  <span style={{ fontWeight: 600, color: '#333', fontSize: '0.875rem' }}>Notifications</span>
+                  <span style={{ fontWeight: 600, color: '#333', fontSize: '0.875rem' }}>Notificaciones</span>
                 </div>
                 <div className="flex items-center justify-between py-1">
                   <div>
-                    <p style={{ color: '#333', fontSize: '0.875rem', fontWeight: 500 }}>Analysis Alerts</p>
-                    <p style={{ color: '#888', fontSize: '0.78rem' }}>Notify when analysis is complete</p>
+                    <p style={{ color: '#333', fontSize: '0.875rem', fontWeight: 500 }}>Avisos de análisis</p>
+                    <p style={{ color: '#888', fontSize: '0.78rem' }}>Avisar cuando termine el análisis</p>
                   </div>
                   <Toggle checked={notifications} onChange={setNotifications} />
                 </div>
               </section>
 
-              {/* Privacy */}
               <section className="px-6 py-5 border-b border-gray-50">
                 <div className="flex items-center gap-2 mb-4">
                   <Shield className="w-4 h-4" style={{ color: '#1a7a4a' }} />
-                  <span style={{ fontWeight: 600, color: '#333', fontSize: '0.875rem' }}>Privacy &amp; Data</span>
+                  <span style={{ fontWeight: 600, color: '#333', fontSize: '0.875rem' }}>Privacidad y datos</span>
                 </div>
                 <div
                   className="flex items-start gap-2 p-3 rounded-xl mb-3"
@@ -154,7 +149,7 @@ export function SettingsModal() {
                 >
                   <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#1a7a4a' }} />
                   <p style={{ color: '#555', fontSize: '0.8rem', lineHeight: 1.5 }}>
-                    Images are processed locally and are not stored on any server. History is saved only in your browser session.
+                    Las imágenes se envían a la API para inferencia. El historial solo se guarda en este navegador.
                   </p>
                 </div>
                 <button
@@ -170,19 +165,17 @@ export function SettingsModal() {
                   onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'white')}
                 >
-                  Clear All History
+                  Borrar todo el historial
                 </button>
               </section>
 
-              {/* About */}
               <section className="px-6 py-5">
                 <p style={{ color: '#aaa', fontSize: '0.78rem', textAlign: 'center' }}>
-                  FreshCheck · EfficientNet multi-output (14 + 2 heads)
+                  FreshCheck · EfficientNet multi-salida (14 + 2)
                 </p>
               </section>
             </div>
 
-            {/* Footer */}
             <div className="px-6 py-4 border-t border-gray-100">
               <button
                 onClick={() => setIsSettingsOpen(false)}
@@ -191,7 +184,7 @@ export function SettingsModal() {
                 onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
                 onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
               >
-                Save &amp; Close
+                Guardar y cerrar
               </button>
             </div>
           </motion.div>
